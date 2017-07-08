@@ -1,0 +1,17 @@
+1.1.0 2017/07/08
+* Added proxy_default which is used if no other filter is used.
+* No longer need to specify *.domain.com for subdomains as well as the TLD, just
+	add matchsubdomains: true to each host_filter array, e.g:
+	
+	"My Web Site": {
+		matchhosts: new Array("my-web-site.com"),
+		matchsubdomains: true,
+		proxy: proxy_off
+	},
+	
+	This will match *.my-web-site.com too, so it will match alpha.my-web-site.com,
+	beta.my-web-site.com. www.my-web-site.com, etc...
+* Tidied up code
+
+1.0.0 2017/07/08
+* Initial release

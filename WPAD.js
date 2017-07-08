@@ -1,19 +1,8 @@
 ﻿// WPAD Elite Autoconfig script by Notorious Pyro (Craig Crawford)
 // https://PyroNexus.com/go/wpad-elite
-// Version 1.0
+// Version 1.1.0
 // License: Creative Commons Attribution-ShareAlike 4.0 International [CC BY-SA 4.0]
 // https://creativecommons.org/licenses/by-sa/4.0/
-// 
-// Description:
-// Allows for easy and powerful WPAD autoconfiguration. Less repetitive, easier to read. Object-oriented. Suggestions welcome.
-//
-// Requirements:
-// A webserver configured for wpad, nginx works well (see: https://pyronexus.com/2017/01/16/wpad-proxy-auto-configuration-with-nginx/)
-// A proxy server, DNS server and appropriate DNS entries (wpad.yourdomain.com).
-//
-// Debugging:
-// Debug using autoprox at http://blogs.msdn.com/cfs-file.ashx/__key/communityserver-blogs-components-weblogfiles/00-00-01-14-81/4628.autoprox.zip
-// Use Chrome internals chrome://net-internals/#sockets and chrome://net-internals/#proxy
 
 function FindProxyForURL(url, host) {
 	// Proxy name specifications. Add as many as you want to suit your set up and then specify how to handle them below.
@@ -25,6 +14,7 @@ function FindProxyForURL(url, host) {
 	var proxy2 = "PROXY proxy2.pyronexus.lan:3128;";
 	var proxy_on = proxy1 + proxy2;
 	var proxy_off = "DIRECT";
+	var proxy_default = proxy_on;
 
 	// Your network (e.g. 192.168.1.0)
 	// Your subnet (e.g. 255.255.255.0).
@@ -33,67 +23,106 @@ function FindProxyForURL(url, host) {
 	var subnet = "255.255.252.0";
 
 	// URL-based filtering. Done first before Hostname-based filtering below.
-	// Syntax:
-	// "User-friendly name": {
-	//		matchurl: "*://*microsoft.com/some/sub/url/*",
-	//		proxy: proxy_on / proxy_off
+	// This can be used to send certain pages through a different proxy than ones defined lower than it or in hostname-based filtering.
+	//
+	// Examples:
+	// "Unique User-friendly name1": {
+	//		matchurl: "*microsoft.com/some/sub/url/*",
+	//		proxy: proxy_on
 	//	},
 	var url_filter = {
 		"Channel 4 Live": {
-			matchurl: "*://*channel4.com/now*",
+			matchurl: "*channel4.com/now*",
 			proxy: proxy_on
 		}
 	}
 
 	// Hostname-based filtering
 	//
-	// Syntax:
-	// "User-friendly name": {
-	//		matchhosts: new Array("alpha.website.com", "*.alpha.website.com"),
-	//		proxy: proxy_on / proxy_off
+	// Examples:
+	// Single domain, no subdomains):
+	// "Unique User-friendly name2": {
+	//		matchhosts: new Array("alpha.website.com"),
+	//		matchsubdomains: false,
+	//		proxy: proxy_on
+	//	},
+	// Syntax (multi domain, all subdomains):
+	// "Unique User-friendly name3": {
+	//		matchhosts: new Array(
+	//			"alpha.website.com",
+	//			"beta.homepage.com",
+	//			"delta.mysite.co.uk"
+	//		),
+	//		matchsubdomains: true,
+	//		proxy: proxy_off
 	//	},
 	var host_filter = {
 		// Do not allow localhost to proxy.
 		"Localhost": {
-			matchhosts: new Array("localhost", "*.localhost","local", "*.local"),
+			matchhosts: new Array(
+				"localhost",
+				"local"
+			),
+			matchsubdomains: true,
 			proxy: proxy_off
 		},
 		// PyroNexus sites and domains...
 		"PyroNexus": {
-			matchhosts: new Array("pyronexus.lan", ".pyronexus.lan", "pyronexus.com", "*.pyronexus.com", "3da.k.hostens.cloud", "*.3da.k.hostens.cloud"),
+			matchhosts: new Array(
+				"pyronexus.lan",
+				"pyronexus.com",
+				"3da.k.hostens.cloud"
+			),
+			matchsubdomains: true,
 			proxy: proxy_off
 		},
 
 		// Video sites
 		// Including: YouTube, Amazon, Channel 4
 		"Video": {
-			matchhosts: new Array("youtube.com", "*.youtube.com", "amazon.com", "*.amazon.com", "amazon.co.uk", "*.amazon.co.uk",
-				"channel4.com", "*.channel4.com", "c4assets.com", "*.c4assets.com"),
+			matchhosts: new Array(
+				"youtube.com",
+				"amazon.com",
+				"amazon.co.uk",
+				"channel4.com",
+				"c4assets.com"
+			),
+			matchsubdomains: true,
 			proxy: proxy_off
 		},
 		// Banks
 		// Including: TSB, Bank of Scotland, Barclays, Halifax, RBS, NatWest, Clydesdale Bank
 		"Banks": {
-			matchhosts: new Array("tsb.co.uk", "*.tsb.co.uk", "bankofscotland.co.uk", "*.bankofscotland.co.uk", "barclays.co.uk", "*.barclays.co.uk",
-				"halifax.co.uk", "*.halifax.co.uk", "rbs.co.uk", "*.rbs.co.uk", "natwest.com", "*.natwest.com", "cbonline.co.uk", "*.cbonline.co.uk"),
+			matchhosts: new Array(
+				"tsb.co.uk",
+				"bankofscotland.co.uk",
+				"barclays.co.uk",
+				"halifax.co.uk",
+				"rbs.co.uk",
+				"natwest.com",
+				"cbonline.co.uk"
+			),
+			matchsubdomains: true,
 			proxy: proxy_off
 		},
 
 		// IPv6 Test as my VPN has IPv6 disabled.
 		"IPv6 Test": {
-			matchhosts: new Array("ipv6-test.com", "*.ipv6-test.com"),
+			matchhosts: new Array("ipv6-test.com"),
+			matchsubdomains: true,
 			proxy: proxy_off
 		},
 
 		// Samsung blocks certain VPNs it seems...
 		"Samsung": {
-			matchhosts: new Array("samsung.com", "*.samsung.com"),
+			matchhosts: new Array("samsung.com"),
+			matchsubdomains: true,
 			proxy: proxy_off
 		}
 	}
 
-	// Below here evaluates the above.
-	// Edit at your own risk.
+	// Below here is the logic for the above. It is more complex than the above so you are more likely to break the script.
+	// Edit only if you feel confident.
 
 	// Check if HTTP, HTTPS or FTP. If not, send direct.
 	if (shExpMatch(url, "http:*") || shExpMatch(url, "https:*") || shExpMatch(url, "ftp:*")) {
@@ -115,14 +144,16 @@ function FindProxyForURL(url, host) {
 		for (var item in host_filter) {
 			var object = host_filter[item];
 			for (var i = 0; i < object.matchhosts.length; i++) {
-				if (shExpMatch(host, object.matchhosts[i])) {
+				if ((shExpMatch(host, object.matchhosts[i])) || (object.matchsubdomains == true && shExpMatch(host, "*." + object.matchhosts[i]))) {
 					return object.proxy;
 				}
 			}
 		}
 
-		return proxy_on;
+		// Default to routing through proxy if no filters allow direct connections to the site.
+		return proxy_default;
 	} else {
+		// Everything non-HTTP/HTTPS/FTP is sent directly.
 		return proxy_off;
 	}
 }
