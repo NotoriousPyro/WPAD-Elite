@@ -5,7 +5,7 @@
 // https://creativecommons.org/licenses/by-sa/4.0/
 // 
 // Description:
-// Allows for easy and powerful WPAD autoconfiguration. Less repetitive, easier to read. Suggestions welcome.
+// Allows for easy and powerful WPAD autoconfiguration. Less repetitive, easier to read. Object-oriented. Suggestions welcome.
 //
 // Requirements:
 // A webserver configured for wpad, nginx works well (see: https://pyronexus.com/2017/01/16/wpad-proxy-auto-configuration-with-nginx/)
@@ -16,15 +16,28 @@
 // Use Chrome internals chrome://net-internals/#sockets and chrome://net-internals/#proxy
 
 function FindProxyForURL(url, host) {
-	// Load balancing between proxies
-	var proxy_on = "PROXY proxy1.pyronexus.lan:3128; PROXY proxy2.pyronexus.lan:3128";
+	// Proxy name specifications. Add as many as you want to suit your set up and then specify how to handle them below.
+	// Syntax:
+	// var myproxy1 = "PROXY proxy.myproxy.com:8888;";
+	// var myproxy2 = "PROXY proxy2.myproxy.com:8888;";
+	// var loadbalance = myproxy1 + myproxy2;
+	var proxy1 = "PROXY proxy1.pyronexus.lan:3128;";
+	var proxy2 = "PROXY proxy2.pyronexus.lan:3128;";
+	var proxy_on = proxy1 + proxy2;
 	var proxy_off = "DIRECT";
+
 	// Your network (e.g. 192.168.1.0)
-	var network = "10.8.0.0";
 	// Your subnet (e.g. 255.255.255.0).
+	// Clients will not connect via the proxy for servers in this network range.
+	var network = "10.8.0.0";
 	var subnet = "255.255.252.0";
 
 	// URL-based filtering. Done first before Hostname-based filtering below.
+	// Syntax:
+	// "User-friendly name": {
+	//		matchurl: "*://*microsoft.com/some/sub/url/*",
+	//		proxy: proxy_on / proxy_off
+	//	},
 	var url_filter = {
 		"Channel 4 Live": {
 			matchurl: "*://*channel4.com/now*",
@@ -33,6 +46,12 @@ function FindProxyForURL(url, host) {
 	}
 
 	// Hostname-based filtering
+	//
+	// Syntax:
+	// "User-friendly name": {
+	//		matchhosts: new Array("alpha.website.com", "*.alpha.website.com"),
+	//		proxy: proxy_on / proxy_off
+	//	},
 	var host_filter = {
 		// Do not allow localhost to proxy.
 		"Localhost": {
@@ -62,7 +81,7 @@ function FindProxyForURL(url, host) {
 
 		// IPv6 Test as my VPN has IPv6 disabled.
 		"IPv6 Test": {
-			matchost: new Array("ipv6-test.com", "*.ipv6-test.com"),
+			matchhosts: new Array("ipv6-test.com", "*.ipv6-test.com"),
 			proxy: proxy_off
 		},
 
