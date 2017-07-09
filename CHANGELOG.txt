@@ -1,3 +1,6 @@
+1.1.1 2017/07/09
+* Added more descriptions
+
 1.1.0 2017/07/08
 * Added proxy_default which is used if no other filter is used.
 * No longer need to specify *.domain.com for subdomains as well as the TLD, just
