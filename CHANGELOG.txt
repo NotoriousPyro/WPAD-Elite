@@ -1,3 +1,8 @@
+1.2.0 2017/07/11
+* Removed the fixed IP/subnet config and replaced with IP-based whitelisting.
+* Altered syntax of object properties to make them more readable.
+* Improved descriptions.
+
 1.1.1 2017/07/09
 * Added more descriptions
 

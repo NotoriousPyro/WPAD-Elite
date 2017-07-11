@@ -1,16 +1,10 @@
 ﻿// WPAD Elite Autoconfig script by Notorious Pyro (Craig Crawford)
 // https://PyroNexus.com/go/wpad-elite
-// Version 1.1.1
+// Version 1.2.0
 // License: Creative Commons Attribution-ShareAlike 4.0 International [CC BY-SA 4.0]
 // https://creativecommons.org/licenses/by-sa/4.0/
 
 function FindProxyForURL(url, host) {
-	// Your network (e.g. 192.168.1.0)
-	// Your subnet (e.g. 255.255.255.0).
-	// Clients will not connect via the proxy for servers in this network range.
-	var network = "10.8.0.0";
-	var subnet = "255.255.252.0";
-
 	// Proxy name specifications. Add as many as you want to suit your set up and then specify how to handle them below.
 	// Syntax:
 	// var myproxy1 = "PROXY proxy.myproxy.com:8888;";
@@ -22,79 +16,98 @@ function FindProxyForURL(url, host) {
 	var proxy_off = "DIRECT";
 	var proxy_default = proxy_on;
 
+	var ip_filter = {
+		//	IP-based filtering. Done before any other filtering.
+		//	
+		//	Examples:
+		//		Matches the commonly-used RFC1918 address range 192.168.1.0/24.
+		//			"Class C": {
+		//				match_ip_network: "192.168.1.0",
+		//				match_ip_subnet: "255.255.255.0",
+		//				proxy: proxy_off
+		//			}
+		"PyroNexus LAN/VPN": {
+			match_ip_network: "10.8.0.0",
+			match_ip_subnet: "255.255.252.0",
+			proxy: proxy_off
+		}
+	}
+
 	var url_filter = {
-		// URL-based filtering. Done first before Hostname-based filtering below.
-		// This can be used to send certain pages through a different proxy than ones defined lower than it or in hostname-based filtering.
-		//
-		// Examples:
-		// "Unique User-friendly name1": {
-		//		matchurl: "*microsoft.com/some/sub/url/*",
-		//		proxy: proxy_on
-		//	},
+		//	URL-based filtering. Done first before Hostname-based filtering below.
+		//	
+		//	Examples:
+		//		Matches *microsoft.com/some/sub/url/*, using * as wildcard, such as microsoft.com/some/sub/url/windows.html
+		//			"Unique identifier #1": {
+		//				match_url: "*microsoft.com/some/sub/url/*",
+		//				proxy: proxy_on
+		//			},
 		"Channel 4 Live": {
-			matchurl: "*channel4.com/now*",
+			match_url: "*channel4.com/now*",
 			proxy: proxy_on
 		}
 	}
 
 	var host_filter = {
-		// Hostname-based filtering
+		//	Hostname-based filtering
+		//	
+		//	Examples:
+		//		Single domain, no subdomains
+		//		Matches ONLY alpha.website.com and not a.alpha.website.com or website.com
+		//			"Unique identifier #2": {
+		//				match_hosts: new Array("alpha.website.com"),
+		//				match_subdomains: false,
+		//				proxy: proxy_on
+		//			},
 		//
-		// Examples:
-		// Single domain, no subdomains:
-		// "Unique User-friendly name2": {
-		//		matchhosts: new Array("alpha.website.com"),
-		//		matchsubdomains: false,
-		//		proxy: proxy_on
-		//	},
-		// Multi domain, all subdomains:
-		// "Unique User-friendly name3": {
-		//		matchhosts: new Array(
-		//			"alpha.website.com",
-		//			"beta.homepage.com",
-		//			"delta.mysite.co.uk"
-		//		),
-		//		matchsubdomains: true,
-		//		proxy: proxy_off
-		//	},
+		//		Multi domain, all subdomains
+		//		Matches alpha.website.com, beta.homepage.com and delta.mysite.co.uk, AND their subdomains.
+		//			"Unique identifier #3": {
+		//				match_hosts: new Array(
+		//					"alpha.website.com",
+		//					"beta.homepage.com",
+		//					"delta.mysite.co.uk"
+		//				),
+		//				match_subdomains: true,
+		//				proxy: proxy_off
+		//			},
 
 		// Do not allow localhost to proxy.
 		"Localhost": {
-			matchhosts: new Array(
+			match_hosts: new Array(
 				"localhost",
 				"local"
 			),
-			matchsubdomains: true,
+			match_subdomains: true,
 			proxy: proxy_off
 		},
 		// PyroNexus sites and domains...
 		"PyroNexus": {
-			matchhosts: new Array(
+			match_hosts: new Array(
 				"pyronexus.lan",
-				"pyronexus.com",
-				"3da.k.hostens.cloud"
+				"pyronexus.com"
 			),
-			matchsubdomains: true,
+			match_subdomains: true,
 			proxy: proxy_off
 		},
 
 		// Video sites
 		// Including: YouTube, Amazon, Channel 4
 		"Video": {
-			matchhosts: new Array(
+			match_hosts: new Array(
 				"youtube.com",
 				"amazon.com",
 				"amazon.co.uk",
 				"channel4.com",
 				"c4assets.com"
 			),
-			matchsubdomains: true,
+			match_subdomains: true,
 			proxy: proxy_off
 		},
 		// Banks
 		// Including: TSB, Bank of Scotland, Barclays, Halifax, RBS, NatWest, Clydesdale Bank
 		"Banks": {
-			matchhosts: new Array(
+			match_hosts: new Array(
 				"tsb.co.uk",
 				"bankofscotland.co.uk",
 				"barclays.co.uk",
@@ -103,21 +116,21 @@ function FindProxyForURL(url, host) {
 				"natwest.com",
 				"cbonline.co.uk"
 			),
-			matchsubdomains: true,
+			match_subdomains: true,
 			proxy: proxy_off
 		},
 
 		// IPv6 Test as my VPN has IPv6 disabled.
 		"IPv6 Test": {
-			matchhosts: new Array("ipv6-test.com"),
-			matchsubdomains: true,
+			match_hosts: new Array("ipv6-test.com"),
+			match_subdomains: true,
 			proxy: proxy_off
 		},
 
 		// Samsung blocks certain VPNs it seems...
 		"Samsung": {
-			matchhosts: new Array("samsung.com"),
-			matchsubdomains: true,
+			match_hosts: new Array("samsung.com"),
+			match_subdomains: true,
 			proxy: proxy_off
 		}
 	}
@@ -127,16 +140,18 @@ function FindProxyForURL(url, host) {
 
 	// Check if HTTP, HTTPS or FTP. If not, send direct.
 	if (shExpMatch(url, "http:*") || shExpMatch(url, "https:*") || shExpMatch(url, "ftp:*")) {
-
-		// Bypass proxy for local web servers in the same subnet as the client.
-		if (isInNet(host, network, subnet)) {
-			return proxy_off;
+		// IP Filtering
+		for (var item in ip_filter) {
+			var object = ip_filter[item];
+			if (isInNet(host, object.match_ip_network, object.match_ip_subnet)) {
+				return object.proxy;
+			}
 		}
 
 		// URL Filtering
 		for (var item in url_filter) {
 			var object = url_filter[item];
-			if (shExpMatch(url, object.matchurl)) {
+			if (shExpMatch(url, object.match_url)) {
 				return object.proxy;
 			}
 		}
@@ -144,8 +159,8 @@ function FindProxyForURL(url, host) {
 		// Host Filtering
 		for (var item in host_filter) {
 			var object = host_filter[item];
-			for (var i = 0; i < object.matchhosts.length; i++) {
-				if ((shExpMatch(host, object.matchhosts[i])) || (object.matchsubdomains === true && shExpMatch(host, "*." + object.matchhosts[i]))) {
+			for (var i = 0; i < object.match_hosts.length; i++) {
+				if ((shExpMatch(host, object.match_hosts[i])) || (object.match_subdomains === true && shExpMatch(host, "*." + object.match_hosts[i]))) {
 					return object.proxy;
 				}
 			}
