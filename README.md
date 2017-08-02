@@ -1,6 +1,6 @@
 WPAD Elite Autoconfig script by Notorious Pyro (Craig Crawford)
 https://PyroNexus.com/go/wpad-elite
-Version 1.2.0
+Version 1.3.0
 License: Creative Commons Attribution-ShareAlike 4.0 International [CC BY-SA 4.0]
 https://creativecommons.org/licenses/by-sa/4.0/
 
