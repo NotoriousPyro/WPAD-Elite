@@ -3,6 +3,13 @@
 // Version 2.1.0
 // License: Creative Commons Attribution-ShareAlike 4.0 International [CC BY-SA 4.0]
 // https://creativecommons.org/licenses/by-sa/4.0/
+//
+//	Common to all of the filter configuration blocks are:
+//		proxy: proxyName
+//		- This allows you to use the name you specified at the top
+//
+//		enabled: true
+//		- This is by default true when undefined (not specified) or anything other than exactly: false
 
 function FindProxyForURL(url, host) {
 	// Proxy name specifications. Add as many as you want to suit your set up and then specify how to handle them below.
@@ -23,30 +30,31 @@ function FindProxyForURL(url, host) {
 		//	URL-based filtering. Very specific and done first. Useful for example, if you have a rule for microsoft.com
 		//	set up, and you want a specific URL such as microsoft.com/some/url, to be sent through a different proxy
 		//	or directly.
-		//	
-		//	Examples:
-		//		Matches *microsoft.com/some/sub/url/*, using * as wildcard, such as microsoft.com/some/sub/url/windows.html
-		//			"Unique identifier #1": {
-		//				match_url: "*microsoft.com/some/sub/url/*",
-		//				proxy: proxy_on
-		//			},
+		//
+		//	Syntax:
+		//		"Unique Name #1": {
+		//			match_url: "*myUrl.com/someSubFolder/*",
+		//			proxy: proxyName
+		//		},
+		//
 		"Channel 4 Live": {
 			match_url: "*channel4.com/now*",
 			proxy: proxy_on
-		}
+		},
 	};
 	
 	let ip_filter_enabled = true;
 	let ip_filter = {
 		//	IP-based filtering. Done after URL-based filtering.
 		//	
-		//	Examples:
-		//		Matches the commonly-used RFC1918 address range 192.168.1.0/24.
-		//			"Class C": {
-		//				match_ip_network: "192.168.1.0",
-		//				match_ip_subnet: "255.255.255.0",
-		//				proxy: proxy_off
-		//			}
+		//	Syntax:
+		//		"Unique Name #2": {
+		//			enabled: false,
+		//			match_ip_network: "192.168.1.0",
+		//			match_ip_subnet: "255.255.255.0",
+		//			proxy: proxyName
+		//		},
+		//
 		"Localhost": {
 			match_ip_network: "127.0.0.1",
 			match_ip_subnet: "255.255.255.0",
@@ -57,17 +65,18 @@ function FindProxyForURL(url, host) {
 			match_ip_network: "10.8.0.0",
 			match_ip_subnet: "255.255.252.0",
 			proxy: proxy_off
-		}
+		},
 	};
 	
 	let host_filter_enabled = true;
 	let host_filter = {
 		//	Hostname-based filtering. Done last.
 		//	
-		//	Examples:
+		//	Syntax:
 		//		Single domain, no subdomains
 		//		Matches ONLY alpha.website.com and not a.alpha.website.com or website.com
 		//			"Unique identifier #2": {
+		//				enabled: false,
 		//				match_hosts: [
 		//					"alpha.website.com"
 		//				],
@@ -232,8 +241,10 @@ function FindProxyForURL(url, host) {
 		if (url_filter_enabled === true) {
 			for (let item in url_filter) {
 				let object = url_filter[item];
-				if (shExpMatch(url, object.match_url)) {
-					return object.proxy;
+				if (typeof object.enabled === "undefined" || object.enabled !== false) {
+					if (shExpMatch(url, object.match_url)) {
+						return object.proxy;
+					}
 				}
 			}
 		}
@@ -242,8 +253,10 @@ function FindProxyForURL(url, host) {
 		if (ip_filter_enabled === true) {
 			for (let item in ip_filter) {
 				let object = ip_filter[item];
-				if (isInNet(host, object.match_ip_network, object.match_ip_subnet)) {
-					return object.proxy;
+				if (typeof object.enabled === "undefined" || object.enabled !== false) {
+					if (isInNet(host, object.match_ip_network, object.match_ip_subnet)) {
+						return object.proxy;
+					}
 				}
 			}
 		}
@@ -252,9 +265,11 @@ function FindProxyForURL(url, host) {
 		if (host_filter_enabled === true) {
 			for (let item in host_filter) {
 				let object = host_filter[item];
-				for (let hostname of object.match_hosts) {
-					if (shExpMatch(host, hostname) || (object.match_subdomains === true && shExpMatch(host, "*." + hostname))) {
-						return object.proxy;
+				if (typeof object.enabled === "undefined" || object.enabled !== false) {
+					for (let hostname of object.match_hosts) {
+						if (shExpMatch(host, hostname) || (object.match_subdomains === true && shExpMatch(host, "*." + hostname))) {
+							return object.proxy;
+						}
 					}
 				}
 			}
