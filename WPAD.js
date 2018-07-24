@@ -1,6 +1,6 @@
-// WPAD Elite Autoconfig script by Notorious Pyro (Craig Crawford)
+// WPAD Elite Autoconfig script by NotoriousPyro (Craig Crawford)
 // https://PyroNexus.com/go/wpad-elite
-// Version 2.0.0
+// Version 2.1.0
 // License: Creative Commons Attribution-ShareAlike 4.0 International [CC BY-SA 4.0]
 // https://creativecommons.org/licenses/by-sa/4.0/
 
@@ -17,10 +17,28 @@ function FindProxyForURL(url, host) {
 	let proxy_on = proxy1 + proxy2;
 	let proxy_off = "DIRECT";
 	let proxy_default = proxy_on;
-
+	
+	let url_filter_enabled = false;
+	let url_filter = {
+		//	URL-based filtering. Very specific and done first. Useful for example, if you have a rule for microsoft.com
+		//	set up, and you want a specific URL such as microsoft.com/some/url, to be sent through a different proxy
+		//	or directly.
+		//	
+		//	Examples:
+		//		Matches *microsoft.com/some/sub/url/*, using * as wildcard, such as microsoft.com/some/sub/url/windows.html
+		//			"Unique identifier #1": {
+		//				match_url: "*microsoft.com/some/sub/url/*",
+		//				proxy: proxy_on
+		//			},
+		"Channel 4 Live": {
+			match_url: "*channel4.com/now*",
+			proxy: proxy_on
+		}
+	};
+	
 	let ip_filter_enabled = true;
 	let ip_filter = {
-		//	IP-based filtering. Done before any other filtering.
+		//	IP-based filtering. Done after URL-based filtering.
 		//	
 		//	Examples:
 		//		Matches the commonly-used RFC1918 address range 192.168.1.0/24.
@@ -40,24 +58,8 @@ function FindProxyForURL(url, host) {
 			match_ip_subnet: "255.255.252.0",
 			proxy: proxy_off
 		}
-	}
-
-	let url_filter_enabled = false;
-	let url_filter = {
-		//	URL-based filtering. Done after IP-filtering.
-		//	
-		//	Examples:
-		//		Matches *microsoft.com/some/sub/url/*, using * as wildcard, such as microsoft.com/some/sub/url/windows.html
-		//			"Unique identifier #1": {
-		//				match_url: "*microsoft.com/some/sub/url/*",
-		//				proxy: proxy_on
-		//			},
-		"Channel 4 Live": {
-			match_url: "*channel4.com/now*",
-			proxy: proxy_on
-		}
-	}
-
+	};
+	
 	let host_filter_enabled = true;
 	let host_filter = {
 		//	Hostname-based filtering. Done last.
@@ -66,7 +68,9 @@ function FindProxyForURL(url, host) {
 		//		Single domain, no subdomains
 		//		Matches ONLY alpha.website.com and not a.alpha.website.com or website.com
 		//			"Unique identifier #2": {
-		//				match_hosts: new Array("alpha.website.com"),
+		//				match_hosts: [
+		//					"alpha.website.com"
+		//				],
 		//				match_subdomains: false,
 		//				proxy: proxy_on
 		//			},
@@ -74,51 +78,51 @@ function FindProxyForURL(url, host) {
 		//		Multi domain, all subdomains
 		//		Matches alpha.website.com, beta.homepage.com and delta.mysite.co.uk, AND their subdomains.
 		//			"Unique identifier #3": {
-		//				match_hosts: new Array(
+		//				match_hosts: [
 		//					"alpha.website.com",
 		//					"beta.homepage.com",
 		//					"delta.mysite.co.uk"
-		//				),
+		//				],
 		//				match_subdomains: true,
 		//				proxy: proxy_off
 		//			},
-
+		
 		// Do not allow localhost to proxy.
 		"Localhost": {
-			match_hosts: new Array(
+			match_hosts: [
 				"localhost",
 				"local"
-			),
+			],
 			match_subdomains: true,
 			proxy: proxy_off
 		},
 		
 		// PyroNexus sites and domains...
 		"PyroNexus": {
-			match_hosts: new Array(
+			match_hosts: [
 				"pyronexus.lan",
 				"pyronexus.com",
 				"metaverse.farm",
 				"mvs.farm"
-			),
+			],
 			match_subdomains: true,
 			proxy: proxy_off
 		},
-
+		
 		// Including: YouTube, Amazon
 		"Video": {
-			match_hosts: new Array(
+			match_hosts: [
 				"youtube.com",
 				"amazon.com",
 				"amazon.co.uk",
 				"netflix.com"
-			),
+			],
 			match_subdomains: true,
 			proxy: proxy_off
 		},
 		
 		"BBC": {
-			match_hosts: new Array(
+			match_hosts: [
 				"bbciplayer.co.uk",
 				"bbci.co.uk",
 				"bbc.co.uk",
@@ -127,23 +131,23 @@ function FindProxyForURL(url, host) {
 				"e3891.g.akamaiedge.net",
 				"bbc01.sitestat.com",
 				"bbci.co.uk.edgekey.net"
-			),
+			],
 			match_subdomains: true,
 			proxy: proxy4
 		},
 		
 		"Channel 4": {
-			match_hosts: new Array(
+			match_hosts: [
 				"channel4.com",
 				"c4assets.com"
-			),
+			],
 			match_subdomains: true,
 			proxy: proxy4
 		},
 		
 		// Including: TSB, Bank of Scotland, Barclays, Halifax, RBS, NatWest, Clydesdale Bank
 		"Banks": {
-			match_hosts: new Array(
+			match_hosts: [
 				"tsb.co.uk",
 				"bankofscotland.co.uk",
 				"barclays.co.uk",
@@ -152,13 +156,13 @@ function FindProxyForURL(url, host) {
 				"natwest.com",
 				"cbonline.co.uk",
 				"skipton.co.uk"
-			),
+			],
 			match_subdomains: true,
 			proxy: proxy_off
 		},
 		
 		"Cryptocurrencies": {
-			match_hosts: new Array(
+			match_hosts: [
 				"bittrex.com",
 				"bitfinex.com",
 				"ethfinex.com",
@@ -166,41 +170,43 @@ function FindProxyForURL(url, host) {
 				"coinbase.com",
 				"ethereum.org",
 				"binance.com"
-			),
+			],
 			match_subdomains: true,
 			proxy: proxy_off
 		},
 		
 		// Steam
 		"Steam": {
-			match_hosts: new Array(
+			match_hosts: [
 				"steampowered.com",
 				"steamcommunity.com"
-			),
+			],
 			match_subdomains: true,
 			proxy: proxy_off
 		},
-
+		
 		// IPv6 Test as my VPN has IPv6 disabled.
 		"IPv6 Test": {
-			match_hosts: new Array("ipv6-test.com"),
+			match_hosts: [
+				"ipv6-test.com"
+			],
 			match_subdomains: true,
 			proxy: proxy_off
 		},
 		
 		// Microsoft
 		"Microsoft": {
-			match_hosts: new Array(
+			match_hosts: [
 				"microsoft.com",
 				"skype.com"
-			),
+			],
 			match_subdomains: true,
 			proxy: proxy_off
 		},
-
+		
 		// "Access Denied" web pages which hate my VPN.
 		"Access Denied": {
-			match_hosts: new Array(
+			match_hosts: [
 				"samsung.com",
 				"expedia.co.uk",
 				"dorothyperkins.com",
@@ -211,27 +217,17 @@ function FindProxyForURL(url, host) {
 				"netflix.com",
 				"nflxvideo.net",
 				"cmegroup.com"
-			),
+			],
 			match_subdomains: true,
 			proxy: proxy_off
 		}
-	}
-
+	};
+	
 	// Below here is the logic for the above. It is more complex than the above so you are more likely to break the script.
 	// Edit only if you feel confident.
-
+	
 	// Check if HTTP, HTTPS or FTP. If not, send direct.
 	if ((shExpMatch(url, "http:*") || shExpMatch(url, "https:*") || shExpMatch(url, "ftp:*")) && !isPlainHostName(host)) {
-		// IP Filtering
-		if (ip_filter_enabled === true) {
-			for (let item in ip_filter) {
-				let object = ip_filter[item];
-				if (isInNet(host, object.match_ip_network, object.match_ip_subnet)) {
-					return object.proxy;
-				}
-			}
-		}
-
 		// URL Filtering
 		if (url_filter_enabled === true) {
 			for (let item in url_filter) {
@@ -241,20 +237,29 @@ function FindProxyForURL(url, host) {
 				}
 			}
 		}
-
+		
+		// IP Filtering
+		if (ip_filter_enabled === true) {
+			for (let item in ip_filter) {
+				let object = ip_filter[item];
+				if (isInNet(host, object.match_ip_network, object.match_ip_subnet)) {
+					return object.proxy;
+				}
+			}
+		}
+		
 		// Host Filtering
 		if (host_filter_enabled === true) {
 			for (let item in host_filter) {
 				let object = host_filter[item];
-				for (let i = 0; i < object.match_hosts.length; i++) {
-					let hostname = object.match_hosts[i];
+				for (let hostname of object.match_hosts) {
 					if (shExpMatch(host, hostname) || (object.match_subdomains === true && shExpMatch(host, "*." + hostname))) {
 						return object.proxy;
 					}
 				}
 			}
 		}
-
+		
 		// Default to routing through proxy if no filters allow direct connections to the site.
 		return proxy_default;
 	}
