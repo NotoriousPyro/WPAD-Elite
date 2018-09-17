@@ -246,9 +246,10 @@ function FindProxyForURL(url, host) {
 		if (enabled(urlFilter.enabled)) {
 
 			for (let item in urlFilter) {
+
 				let object = urlFilter[item];
 
-				if (typeof object !== "boolean" && enabled(object)) {
+				if (typeof object !== "boolean" && enabled(object.enabled)) {
 
 					if (shExpMatch(url, object.matchUrl)) {
 						return object.proxy;
@@ -267,7 +268,7 @@ function FindProxyForURL(url, host) {
 
 				let object = ipFilter[item];
 
-				if (typeof object !== "boolean" && enabled(object)) {
+				if (typeof object !== "boolean" && enabled(object.enabled)) {
 
 					if (isInNet(host, object.matchNetwork, object.matchSubnet)) {
 						return object.proxy;
@@ -281,11 +282,12 @@ function FindProxyForURL(url, host) {
 
 		// Host Filtering
 		if (enabled(hostFilter.enabled)) {
+
 			for (let item in hostFilter) {
 
 				let object = hostFilter[item];
 
-				if (typeof object !== "boolean" && enabled(object)) {
+				if (typeof object !== "boolean" && enabled(object.enabled)) {
 
 					for (let hostname of object.matchHosts) {
 
